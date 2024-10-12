@@ -16,6 +16,22 @@ for (file in files) {
   jokers[[joker_name]] <- img
 }
 
+opts_item_limit <- sortable::sortable_options(
+  # Via Barret Schloerke:
+  #   https://forum.posit.co/t/shiny-sortable-how-to-limit-number-of-items-that-can-be-dropped/69233/2
+  # In turn, inspiration from:
+  #   https://jsbin.com/nacoyah/edit?js,output
+  group = list(
+    name = "shared_group",
+    put = htmlwidgets::JS("
+      function(to) {
+        // only allow a 'put' if there is less than 1 child already
+        return to.el.children.length < 5;
+      }
+    ")
+  )
+)
+
 ui <- shiny::fluidPage(
   shiny::tags$head(
     shiny::tags$link(
@@ -27,50 +43,58 @@ ui <- shiny::fluidPage(
   shiny::fluidRow(
     shiny::column(
       shiny::tags$h1("Not Balatro"),
-      shiny::tags$p("An experiment with the {sortable} package for R."),
+      shiny::tags$p(
+        "An experiment with the",
+        shiny::tags$a(href = "https://rstudio.github.io/sortable", "{sortable}"),
+        "package for R."
+      ),
       shiny::tags$h2("Jokers"),
       shiny::tags$p("Click and drag jokers from the pool into your hand."),
       width = 12,
-      sortable::bucket_list(
-        header = NULL,
-        group_name = "bucket_jokers",
-        orientation = "vertical",
-        sortable::add_rank_list(
-          text = "Pool",
-          labels = jokers,
-          input_id = "rank_list_pool",
-          orientation = "horizontal"
-        ),
-        sortable::add_rank_list(
-          text = "Hand",
-          labels = NULL,
-          input_id = "rank_list_hand",
-          orientation = "horizontal"
-        )
+      shiny::tags$h3(shiny::textOutput("pool_count")),
+      sortable::rank_list(
+        input_id = "pool_list",
+        labels = jokers,
+        orientation = "horizontal",
+        options = sortable::sortable_options(group = "shared_group")
+      ),
+      shiny::tags$h3(shiny::textOutput("hand_count")),
+      sortable::rank_list(
+        input_id = "hand_list",
+        labels = NULL,
+        orientation = "horizontal",
+        options = opts_item_limit,
       )
     )
   ),
-  shiny::fluidRow(
-    shiny::column(
-      width = 12,
-      shiny::tags$b("Result"),
-      shiny::column(
-        width = 12,
-        shiny::tags$p("input$rank_list_pool"),
-        shiny::verbatimTextOutput("pool_set"),
-        shiny::tags$p("input$rank_list_hand"),
-        shiny::verbatimTextOutput("hand_set"),
-        shiny::tags$p("input$bucket_jokers"),
-        shiny::verbatimTextOutput("bucket_set")
-      )
-    )
-  )
+  tags$h2("Selections"),
+  "Pool: ", verbatimTextOutput("pool_card_names"),
+  "Hand: ", verbatimTextOutput("hand_card_names"),
 )
 
-server <- function(input, output, session) {
-  output$pool_set <- shiny::renderPrint(input$rank_list_pool)
-  output$hand_set <- shiny::renderPrint(input$rank_list_hand)
-  output$bucket_set <- shiny::renderPrint(input$bucket_jokers)
+server <- function(input, output) {
+
+  output$joker_count <- shiny::renderText(length(jokers))
+  output$pool_count <- shiny::renderText({
+    num <- if (is.null(input$pool_list)) {
+      length(jokers)
+    } else {
+      length(input$pool_list)
+    }
+    paste0("Pool (", num, "/", length(jokers), ")")
+  })
+  output$hand_count <- shiny::renderText({
+    num <- if (is.null(input$hand_list)) {
+      0
+    } else {
+      length(input$hand_list)
+    }
+    paste0("Hand (", num, "/", 5, ")")
+  })
+
+  output$pool_card_names <- shiny::renderPrint(input$pool_list)
+  output$hand_card_names <- shiny::renderPrint(input$hand_list)
+
 }
 
 shiny::shinyApp(ui, server)
