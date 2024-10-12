@@ -47,3 +47,6 @@ rsconnect/
 
 # macOS
 .DS_Store
+
+# Rendered README
+README.html

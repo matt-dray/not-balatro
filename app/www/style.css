@@ -1,10 +1,5 @@
-
 .default-sortable.rank-list-container {
-  border: 0px; /* no bucket border */
-}
-
-.default-sortable .rank-list {
-  overflow: scroll; /* scroll items horizontally */
+  border: 0px; /* no list borders */
 }
 
 .default-sortable .rank-list-item {
@@ -13,11 +8,15 @@
   flex: none;  /* prevent item overlap */
 }
 
+.default-sortable .rank-list {
+  overflow: auto; /* scroll items horizontally */
+}
+
 .default-sortable.horizontal .rank-list-item {
   flex-grow: 0; /* prevent item stretching horizontally to fill space */
 }
 
 .default-sortable .rank-list.rank-list-empty {
   height: 110px;
-  width: 80px;
+  width: 403px;
 }
