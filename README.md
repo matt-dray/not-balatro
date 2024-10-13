@@ -9,6 +9,4 @@ A test of [the {sortable} package](https://rstudio.github.io/sortable/) to see h
 
 [Available on the web](https://matt-dray.github.io/not-balatro/) and prepared for serverless deployment with [{shinylive}](https://posit-dev.github.io/r-shinylive/). Very much a work in progress/proof of concept.
 
-Currently using jokers from the excellent [Balatro by Localthunk](https://www.playbalatro.com/). Images from the [Balatro Fandom wiki](https://balatrogame.fandom.com/wiki/Jokers#List_of_Jokers).
-
 <img src='img/cards.png' alt="Two rows of playing cards labelled 'pool' and 'hand'. The number of cards is shown as 47 out of 52 in the pool and 5 out of 5 in the hand. There is also a score of 40 points shown by the hand, which is the sum of each card's value (2, ace, 9, king and 7).">
