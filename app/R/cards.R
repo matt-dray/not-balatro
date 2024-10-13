@@ -14,7 +14,7 @@ get_card_taglist <- function(files = get_card_images()) {
 }
 
 get_card_images <- function(path = "www/img") {
-  list.files(path, pattern = "^\\w{2}.png$", full.names = TRUE)
+  list.files(path, pattern = "^\\w{2,3}.png$", full.names = TRUE)
 }
 
 get_card_name <- function(file) {
