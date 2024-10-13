@@ -1,6 +1,6 @@
 make_card <- function(
     suit = c("C", "D", "H", "S"),
-    value = c("A", "K", "Q", "J", 10:1),
+    value = c("A", "K", "Q", "J", 10:2),
     blank_path = "www/img/blank.png",  # 80x100px
     write_path = "www/img"
 ) {
@@ -27,6 +27,12 @@ make_card <- function(
     magick::image_annotate(
       text = value,
       location = "+5",
+      size = 25,
+      color = suit_colour
+    ) |>
+    magick::image_annotate(
+      text = suit_symbol,
+      location = "+5+20",
       size = 25,
       color = suit_colour
     )

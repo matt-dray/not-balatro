@@ -1,35 +1,6 @@
-files <- list.files("www/img", pattern = "^\\w{2}.png$", full.names = TRUE)
+source(list.files("R", full.names = TRUE))
 
-get_card_score <- function(hand) {
-
-  if (length(hand) == 0) return(0)
-
-  values <- strsplit(hand, "") |> lapply("[", 2)
-
-  lapply(
-    values,
-    \(value) if (value %in% c("A", "K", "Q", "J")) 11 else as.numeric(value)
-  ) |>
-    unlist() |>
-    sum()
-
-}
-
-get_card_name <- function(file) {
-  file |>
-    tools::file_path_sans_ext() |>
-    basename() |>
-    gsub("_", " ", x = _)
-}
-
-cards <- shiny::tagList()
-
-for (file in files) {
-  source <- base64enc::dataURI(file = file, mime = "image/png")
-  img <- shiny::tags$image(src = source)
-  card_name <- get_card_name(file)
-  cards[[card_name]] <- img
-}
+all_cards <- get_card_taglist()
 
 opts_item_limit <- sortable::sortable_options(
   # Via Barret Schloerke:
@@ -67,12 +38,7 @@ ui <- shiny::fluidPage(
       shiny::tags$p("Click and drag cards from the pool into your hand."),
       width = 12,
       shiny::tags$h3(shiny::textOutput("pool_count")),
-      sortable::rank_list(
-        input_id = "pool_list",
-        labels = cards,
-        orientation = "horizontal",
-        options = sortable::sortable_options(group = "shared_group")
-      ),
+      shiny::uiOutput("card_pool_ui"),
       shiny::tags$h3(shiny::textOutput("hand_count")),
       sortable::rank_list(
         input_id = "hand_list",
@@ -85,6 +51,20 @@ ui <- shiny::fluidPage(
 )
 
 server <- function(input, output) {
+
+  output$card_pool_ui <- shiny::renderUI({
+
+    card_sample <- sample(all_cards, 8) |> names()
+    cards <- all_cards[names(all_cards) %in% card_sample]
+
+    sortable::rank_list(
+      input_id = "pool_list",
+      labels = cards,
+      orientation = "horizontal",
+      options = sortable::sortable_options(group = "shared_group")
+    )
+
+  })
 
   output$pool_card_names <- shiny::renderPrint(input$pool_list)
   output$hand_card_names <- shiny::renderPrint(input$hand_list)
