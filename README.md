@@ -11,4 +11,4 @@ A test of [the {sortable} package](https://rstudio.github.io/sortable/) to see h
 
 Currently using jokers from the excellent [Balatro by Localthunk](https://www.playbalatro.com/). Images from the [Balatro Fandom wiki](https://balatrogame.fandom.com/wiki/Jokers#List_of_Jokers).
 
-<img src='img/jokers.png' alt="Two rows of playing  cards labelled 'pool' and 'hand'. There are 13 in the upper row and two in the lower. They are all variants of the joker card.">
+<img src='img/cards.png' alt="Two rows of playing cards labelled 'pool' and 'hand'. The number of cards is shown as 47 out of 52 in the pool and 5 out of 5 in the hand. There is also a score of 40 points shown by the hand, which is the sum of each card's value (2, ace, 9, king and 7).">
