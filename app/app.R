@@ -66,14 +66,11 @@ server <- function(input, output) {
 
   })
 
-  output$pool_card_names <- shiny::renderPrint(input$pool_list)
-  output$hand_card_names <- shiny::renderPrint(input$hand_list)
-
   hand_card_score <- shiny::reactive(get_card_score(input$hand_list))
 
   output$pool_count <- shiny::renderText({
-    num <- if (is.null(input$pool_list)) length(cards) else length(input$pool_list)
-    paste0("Pool (", num, "/", length(cards), ")")
+    pool_size <- length(input$pool_list)
+    paste0("Pool (", pool_size, "/", 8, ")")
   })
 
   output$hand_count <- shiny::renderText({

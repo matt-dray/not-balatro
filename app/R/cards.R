@@ -28,7 +28,7 @@ get_card_score <- function(hand) {
 
   if (length(hand) == 0) return(0)
 
-  values <- strsplit(hand, "") |> lapply("[", 2)
+  values <- substr(hand, 2, nchar(hand))
 
   lapply(
     values,
