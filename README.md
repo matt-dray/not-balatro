@@ -3,6 +3,7 @@
 
 <!-- badges: start -->
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
+[![](https://img.shields.io/badge/Shiny-shinylive-447099?style=flat&labelColor=white&logo=Posit&logoColor=447099)](https://matt-dray.github.io/not-balatro/)
 <!-- badges: end -->
 
 A test of [the {sortable} package](https://rstudio.github.io/sortable/) to see how pliable it is to play card games with R using [{shiny} apps](https://shiny.posit.co/). Specifically, clicking and dragging 'cards' from a pool into your hand and then calculating a score given your selections.
