@@ -1,6 +1,6 @@
 make_card <- function(
-    suit = c("C", "D", "H", "S"),
     value = c("A", "K", "Q", "J", 10:2),
+    suit = c("C", "D", "H", "S"),
     blank_path = "www/img/blank.png",  # 80x100px
     write_path = "www/img"
 ) {
@@ -37,12 +37,13 @@ make_card <- function(
       color = suit_colour
     )
 
-  card_file <- paste0(suit, value, ".png")
+  value <- if (value == "10") "T" else value
+  card_file <- paste0(value, suit, ".png")
   card |> magick::image_write(file.path(write_path, card_file))
 
 }
 
+values <- c("A", "K", "Q", "J", 10:2)
 suits <- c("C", "D", "H", "S")
-values <- c("A", "K", "Q", "J", 10:1)
-card_perms <- expand.grid(value = values, suit = suits)
+card_perms <- expand.grid(suit = suits, value = values)
 purrr::pmap(card_perms, make_card)

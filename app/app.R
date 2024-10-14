@@ -28,11 +28,14 @@ ui <- shiny::fluidPage(
   ),
   shiny::fluidRow(
     shiny::column(
-      shiny::tags$h1("Not Balatro"),
+      shiny::tags$h1("🃏 Not Balatro"),
       shiny::tags$p(
-        "An experiment with the",
+        "A work-in-progress experiment by",
+        shiny::tags$a(href = "https://www.matt-dray.com/", "Matt"),
+        "with the",
         shiny::tags$a(href = "https://rstudio.github.io/sortable", "{sortable}"),
-        "package for R."
+        "package for R. Find the source",
+        shiny::tags$a(href = "https://github.com/matt-dray/not-balatro", "on GitHub."),
       ),
       shiny::tags$h2("Cards"),
       shiny::tags$p("Click and drag cards from the pool into your hand."),
@@ -66,16 +69,21 @@ server <- function(input, output) {
 
   })
 
-  hand_card_score <- shiny::reactive(get_card_score(input$hand_list))
-
   output$pool_count <- shiny::renderText({
     pool_size <- length(input$pool_list)
     paste0("Pool (", pool_size, "/", 8, ")")
   })
 
   output$hand_count <- shiny::renderText({
-    num <- if (is.null(input$hand_list)) 0 else length(input$hand_list)
-    paste0("Hand (", num, "/", 5, ", ", hand_card_score(), " points)")
+    card_count <- if (is.null(input$hand_list)) 0 else length(input$hand_list)
+    poker_hand <- evaluate_poker_hand(input$hand_list)
+    score <- score_hand(input$hand_list)
+    paste0(
+      "Hand (",
+      card_count, "/", 5, ", ",
+      poker_hand, ", ",
+      score, " points)"
+    )
   })
 
 }
