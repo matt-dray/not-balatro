@@ -9,4 +9,4 @@ A test of [the {sortable} package](https://rstudio.github.io/sortable/) to see h
 
 [Available on the web](https://matt-dray.github.io/not-balatro/) and prepared for serverless deployment with [{shinylive}](https://posit-dev.github.io/r-shinylive/). Very much a work in progress/proof of concept.
 
-<img src='img/cards.png' alt="Two rows of playing cards labelled 'pool' and 'hand'. The number of cards is shown as 4 out of 8 in the pool and 4 out of 5 in the hand. There is also a score of 30 points shown by the hand, which is the sum of each card's value (a two pair of queens and 4s).">
+<img src='img/full-house.gif' alt="Two rows of playing cards labelled 'pool' and 'hand'. Cards are dragged from the pool to the hand. A three is dragged and the text updates from 'no hand' to 'high card'. Another three and it changes to 'a pair'. Then two kings and it changes to 'two pair'. Finally a third king is added and it updates to say 'full house'.">
