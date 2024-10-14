@@ -14,7 +14,7 @@ get_card_taglist <- function(files = get_card_images()) {
 }
 
 get_card_images <- function(path = "www/img") {
-  list.files(path, pattern = "^\\w{2,3}.png$", full.names = TRUE)
+  list.files(path, pattern = "^\\w{2}.png$", full.names = TRUE)
 }
 
 get_card_name <- function(file) {
@@ -28,11 +28,19 @@ get_card_score <- function(hand) {
 
   if (length(hand) == 0) return(0)
 
-  values <- substr(hand, 2, nchar(hand))
+  values <- substr(hand, 1, 1)
 
   lapply(
     values,
-    \(value) if (value %in% c("A", "K", "Q", "J")) 11 else as.numeric(value)
+    \(value) {
+      if (value %in% c("A", "K", "Q", "J")) {
+        11
+      } else if (value == "T") {
+        10
+      } else {
+        as.numeric(value)
+      }
+    }
   ) |>
     unlist() |>
     sum()
