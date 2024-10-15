@@ -55,9 +55,15 @@ ui <- shiny::fluidPage(
 
 server <- function(input, output) {
 
+  rv <- shiny::reactiveValues(
+    deck_remaining = permute_suits_and_values()
+  )
+
   output$card_pool_ui <- shiny::renderUI({
 
     card_sample <- sample(all_cards, 8) |> names()
+    deck_remaining <- shiny::isolate(rv[["deck_remaining"]])
+    rv[["deck_remaining"]] <- deck_remaining[!deck_remaining %in% card_sample]
     cards <- all_cards[names(all_cards) %in% card_sample]
 
     sortable::rank_list(
@@ -71,7 +77,8 @@ server <- function(input, output) {
 
   output$pool_count <- shiny::renderText({
     pool_size <- length(input$pool_list)
-    paste0("Pool (", pool_size, "/", 8, ")")
+    deck_count <- shiny::isolate(rv[["deck_remaining"]])
+    paste0("Pool (", pool_size, "/8, ", length(deck_count), "/52 in deck)")
   })
 
   output$hand_count <- shiny::renderText({
@@ -80,7 +87,7 @@ server <- function(input, output) {
     score <- score_hand(input$hand_list)
     paste0(
       "Hand (",
-      card_count, "/", 5, ", ",
+      card_count, "/5, ",
       poker_hand, ", ",
       score, " points)"
     )

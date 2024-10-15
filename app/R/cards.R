@@ -103,3 +103,19 @@ enumerate_cards <- function(hand) {
     as.numeric()
 
 }
+
+permute_suits_and_values <- function(
+    values = c("A", "K", "Q", "J", 10:2),
+    suits = c("C", "D", "H", "S"),
+    as_vector = TRUE
+) {
+
+  permutations <- expand.grid(value = values, suit = suits)
+
+  if (as_vector) {
+    permutations <- paste0(permutations[["value"]], permutations[["suit"]])
+  }
+
+  permutations
+
+}
