@@ -43,7 +43,6 @@ make_card <- function(
 
 }
 
-values <- c("A", "K", "Q", "J", 10:2)
-suits <- c("C", "D", "H", "S")
-card_perms <- expand.grid(suit = suits, value = values)
+source("R/cards.R")
+card_perms <- permute_suits_and_values(as_vector = FALSE)
 purrr::pmap(card_perms, make_card)
