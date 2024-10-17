@@ -105,7 +105,7 @@ enumerate_cards <- function(hand) {
 }
 
 permute_suits_and_values <- function(
-    values = c("A", "K", "Q", "J", 10:2),
+    values = c("A", "K", "Q", "J", "T", 9:2),
     suits = c("C", "D", "H", "S"),
     as_vector = TRUE
 ) {

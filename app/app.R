@@ -1,7 +1,3 @@
-source(list.files("R", full.names = TRUE))
-
-all_cards <- get_card_taglist()
-
 opts_item_limit <- sortable::sortable_options(
   # Via Barret Schloerke:
   #   https://forum.posit.co/t/shiny-sortable-how-to-limit-number-of-items-that-can-be-dropped/69233/2
@@ -19,6 +15,7 @@ opts_item_limit <- sortable::sortable_options(
 )
 
 ui <- shiny::fluidPage(
+  shinyjs::useShinyjs(),
   shiny::tags$head(
     shiny::tags$link(
       rel = "stylesheet",
@@ -42,6 +39,7 @@ ui <- shiny::fluidPage(
       width = 12,
       shiny::tags$h3(shiny::textOutput("pool_count")),
       shiny::uiOutput("card_pool_ui"),
+      shiny::actionButton("button_draw", "Draw", shiny::icon("square-plus")),
       shiny::tags$h3(shiny::textOutput("hand_count")),
       sortable::rank_list(
         input_id = "hand_list",
@@ -55,29 +53,79 @@ ui <- shiny::fluidPage(
 
 server <- function(input, output) {
 
+  # Data ----
+
+  all_card_images <- get_card_taglist()
+
+  # Reactive values ----
+
+  # Set up card sets
+
   rv <- shiny::reactiveValues(
-    deck_remaining = permute_suits_and_values()
+    hand = NULL,
+    pool = sample(permute_suits_and_values(), 8),
   )
 
-  output$card_pool_ui <- shiny::renderUI({
+  deck <- permute_suits_and_values()
+  rv[["deck"]] <- deck[!deck %in% shiny::isolate(rv[["pool"]])]
 
-    card_sample <- sample(all_cards, 8) |> names()
-    deck_remaining <- shiny::isolate(rv[["deck_remaining"]])
-    rv[["deck_remaining"]] <- deck_remaining[!deck_remaining %in% card_sample]
-    cards <- all_cards[names(all_cards) %in% card_sample]
+  pool <- shiny::isolate(rv[["pool"]])
+  rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% pool]
 
-    sortable::rank_list(
-      input_id = "pool_list",
-      labels = cards,
-      orientation = "horizontal",
-      options = sortable::sortable_options(group = "shared_group")
+  # Observers ----
+
+  # Remove hand cards from pool
+  shiny::observe({
+    rv[["hand"]] <- input$hand_list
+    pool <- rv[["pool"]]
+    rv[["pool"]] <- pool[!pool %in% rv[["hand"]]]
+  })
+
+  # Can't draw cards if the pool is full
+  shiny::observe({
+    if (length(input$pool_list) == 8) {
+      shinyjs::disable("button_draw")
+    } else {
+      shinyjs::enable("button_draw")
+    }
+  })
+
+  # On click, draw new pool
+  shiny::observeEvent(input$button_draw, {
+
+    deck <- rv[["deck"]]
+    pool <- rv[["pool"]]
+    n_cards_needed <- 8 - length(pool)
+
+    new_cards <- sample(deck, n_cards_needed)
+    new_pool <- c(pool, new_cards)
+
+    rv[["deck"]] <- deck[!deck %in% new_cards]  # remove sampled cards from deck
+    rv[["pool"]] <- new_pool  # set sample as pool
+    rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% rv[["pool"]]]
+
+    sortable:::update_rank_list(
+      "pool_list",
+      text = rv[["pool_images"]]
     )
 
   })
 
+  # Outputs ----
+
+  # Create pool list UI
+  output$card_pool_ui <- shiny::renderUI({
+    sortable::rank_list(
+      input_id = "pool_list",
+      labels = rv[["pool_images"]],
+      orientation = "horizontal",
+      options = sortable::sortable_options(group = "shared_group")
+    )
+  })
+
   output$pool_count <- shiny::renderText({
     pool_size <- length(input$pool_list)
-    deck_count <- shiny::isolate(rv[["deck_remaining"]])
+    deck_count <- shiny::isolate(rv[["deck"]])
     paste0("Pool (", pool_size, "/8, ", length(deck_count), "/52 in deck)")
   })
 
