@@ -104,7 +104,7 @@ server <- function(input, output) {
     rv[["pool"]] <- new_pool  # set sample as pool
     rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% rv[["pool"]]]
 
-    sortable::update_rank_list(
+    sortable:::update_rank_list(
       "pool_list",
       text = rv[["pool_images"]]
     )
