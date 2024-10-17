@@ -15,6 +15,7 @@ opts_item_limit <- sortable::sortable_options(
 )
 
 ui <- shiny::fluidPage(
+  shinyjs::useShinyjs(),
   shiny::tags$head(
     shiny::tags$link(
       rel = "stylesheet",
@@ -38,7 +39,7 @@ ui <- shiny::fluidPage(
       width = 12,
       shiny::tags$h3(shiny::textOutput("pool_count")),
       shiny::uiOutput("card_pool_ui"),
-      shiny::actionButton("button_redraw", "Redraw", shiny::icon("dice")),
+      shiny::actionButton("button_draw", "Draw", shiny::icon("square-plus")),
       shiny::tags$h3(shiny::textOutput("hand_count")),
       sortable::rank_list(
         input_id = "hand_list",
@@ -71,6 +72,8 @@ server <- function(input, output) {
   pool <- shiny::isolate(rv[["pool"]])
   rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% pool]
 
+  # Observers ----
+
   # Remove hand cards from pool
   shiny::observe({
     rv[["hand"]] <- input$hand_list
@@ -78,14 +81,20 @@ server <- function(input, output) {
     rv[["pool"]] <- pool[!pool %in% rv[["hand"]]]
   })
 
-  # Observers ----
+  # Can't draw cards if the pool is full
+  shiny::observe({
+    if (length(input$pool_list) == 8) {
+      shinyjs::disable("button_draw")
+    } else {
+      shinyjs::enable("button_draw")
+    }
+  })
 
   # On click, draw new pool
-  shiny::observeEvent(input$button_redraw, {
+  shiny::observeEvent(input$button_draw, {
 
     deck <- rv[["deck"]]
     pool <- rv[["pool"]]
-    print(pool)
     n_cards_needed <- 8 - length(pool)
 
     new_cards <- sample(deck, n_cards_needed)
@@ -102,7 +111,7 @@ server <- function(input, output) {
 
   })
 
-  # Reactives ----
+  # Outputs ----
 
   # Create pool list UI
   output$card_pool_ui <- shiny::renderUI({
