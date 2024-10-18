@@ -1,19 +1,3 @@
-opts_item_limit <- sortable::sortable_options(
-  # Via Barret Schloerke:
-  #   https://forum.posit.co/t/shiny-sortable-how-to-limit-number-of-items-that-can-be-dropped/69233/2
-  # In turn, inspiration from:
-  #   https://jsbin.com/nacoyah/edit?js,output
-  group = list(
-    name = "shared_group",
-    put = htmlwidgets::JS("
-      function(to) {
-        // only allow a 'put' if there is less than 1 child already
-        return to.el.children.length < 5;
-      }
-    ")
-  )
-)
-
 ui <- shiny::fluidPage(
   shinyjs::useShinyjs(),
   shiny::tags$head(
@@ -45,7 +29,7 @@ ui <- shiny::fluidPage(
         input_id = "hand_list",
         labels = NULL,
         orientation = "horizontal",
-        options = opts_item_limit,
+        options = set_opts_hand_limit("shared_group", pull_limit = 8, put_limit = 5)
       )
     )
   )
