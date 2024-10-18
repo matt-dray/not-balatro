@@ -1,3 +1,27 @@
+set_opts_hand_limit <- function(name, pull_limit, put_limit) {
+  sortable::sortable_options(
+    # Via Barret Schloerke:
+    #   https://forum.posit.co/t/shiny-sortable-how-to-limit-number-of-items-that-can-be-dropped/69233/2
+    # In turn, inspiration from:
+    #   https://jsbin.com/nacoyah/edit?js,output
+    group = list(
+      name = "shared_group",
+      pull = htmlwidgets::JS(paste0("
+        function(to) {
+          // only allow a 'put' if there is less than x children already
+          return to.el.children.length < ", pull_limit, ";
+        }
+      ")),
+      put = htmlwidgets::JS(paste0("
+        function(to) {
+          // only allow a 'put' if there is less than x children already
+          return to.el.children.length < ", put_limit, ";
+        }
+      "))
+    )
+  )
+}
+
 get_card_taglist <- function(files = get_card_images()) {
 
   cards <- shiny::tagList()
