@@ -23,6 +23,8 @@ ui <- shiny::fluidPage(
       width = 12,
       shiny::tags$h3(shiny::textOutput("pool_count")),
       shiny::uiOutput("card_pool_ui"),
+      shiny::actionButton("button_rank", "Rank", shiny::icon("hashtag")),
+      shiny::actionButton("button_suit", "Suit", shiny::icon("heart")),
       shiny::actionButton("button_draw", "Draw", shiny::icon("square-plus")),
       shiny::tags$h3(shiny::textOutput("hand_count")),
       sortable::rank_list(
@@ -47,14 +49,15 @@ server <- function(input, output) {
 
   rv <- shiny::reactiveValues(
     hand = NULL,
-    pool = sample(permute_suits_and_values(), 8),
+    pool = sample(permute_suits_and_ranks(), 8) |> order_cards("rank")
   )
 
-  deck <- permute_suits_and_values()
+  deck <- permute_suits_and_ranks()
   rv[["deck"]] <- deck[!deck %in% shiny::isolate(rv[["pool"]])]
 
   pool <- shiny::isolate(rv[["pool"]])
-  rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% pool]
+  pool_images <- all_card_images[names(all_card_images) %in% pool]
+  rv[["pool_images"]] <- pool_images[shiny::isolate(rv[["pool"]])]  # reorder
 
   # Observers ----
 
@@ -65,7 +68,7 @@ server <- function(input, output) {
     rv[["pool"]] <- pool[!pool %in% rv[["hand"]]]
   })
 
-  # Can't draw cards if the pool is full
+  # Prevent card draw if the pool is full
   shiny::observe({
     if (length(input$pool_list) == 8) {
       shinyjs::disable("button_draw")
@@ -74,7 +77,7 @@ server <- function(input, output) {
     }
   })
 
-  # On click, draw new pool
+  # On button click, draw new pool
   shiny::observeEvent(input$button_draw, {
 
     deck <- rv[["deck"]]
@@ -87,6 +90,34 @@ server <- function(input, output) {
     rv[["deck"]] <- deck[!deck %in% new_cards]  # remove sampled cards from deck
     rv[["pool"]] <- new_pool  # set sample as pool
     rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% rv[["pool"]]]
+
+    sortable:::update_rank_list(
+      "pool_list",
+      text = rv[["pool_images"]]
+    )
+
+  })
+
+  # On button click, order by rank
+  shiny::observeEvent(input$button_rank, {
+
+    cards_ordered <- order_cards(rv[["pool"]], "rank")
+    rv[["pool"]] <- cards_ordered
+    rv[["pool_images"]] <- rv[["pool_images"]][cards_ordered]
+
+    sortable:::update_rank_list(
+      "pool_list",
+      text = rv[["pool_images"]]
+    )
+
+  })
+
+  # On button click, order by rank
+  shiny::observeEvent(input$button_suit, {
+
+    cards_ordered <- order_cards(rv[["pool"]], "suit")
+    rv[["pool"]] <- cards_ordered
+    rv[["pool_images"]] <- rv[["pool_images"]][cards_ordered]
 
     sortable:::update_rank_list(
       "pool_list",
