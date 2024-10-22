@@ -17,8 +17,8 @@ make_card <- function(
 
   suit_colour <- switch(
     as.character(suit),
-    "C" = "black",
-    "D" = "red",
+    "C" = "purple",
+    "D" = "orange",
     "H" = "red",
     "S" = "black"
   )
