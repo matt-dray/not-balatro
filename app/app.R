@@ -1,3 +1,9 @@
+# Prepare data
+deck <- permute_suits_and_ranks()
+all_card_images <- get_card_taglist()
+pool_limit <- 8
+hand_limit <- 5
+
 ui <- shiny::fluidPage(
   shinyjs::useShinyjs(),
   shiny::tags$head(
@@ -8,19 +14,25 @@ ui <- shiny::fluidPage(
     )
   ),
   shiny::fluidRow(
+    title = "Sortable card concept",
     shiny::column(
-      shiny::tags$h1("🃏 Not Balatro"),
+      width = 12,
+      shiny::tags$h1("🃏 Sortable card concept"),
       shiny::tags$p(
-        "A work-in-progress experiment by",
-        shiny::tags$a(href = "https://www.matt-dray.com/", "Matt"),
+        "An experiment by",
+        shiny::tags$a(href = "https://www.matt-dray.com/", "matt-dray"),
         "with the",
         shiny::tags$a(href = "https://rstudio.github.io/sortable", "{sortable}"),
         "package for R. Find the source",
         shiny::tags$a(href = "https://github.com/matt-dray/not-balatro", "on GitHub."),
       ),
-      shiny::tags$h2("Cards"),
-      shiny::tags$p("Click and drag cards from the pool into your hand."),
-      width = 12,
+      shiny::tags$p(
+        "Click and drag cards from the pool into your hand. There's no game loop yet, but try to make",
+        shiny::tags$a(
+          href = "https://en.wikipedia.org/wiki/List_of_poker_hands#Hand-ranking_categories",
+          "a poker hand."
+        )
+      ),
       shiny::tags$h3(shiny::textOutput("pool_count")),
       shiny::uiOutput("card_pool_ui"),
       shiny::actionButton("button_rank", "Rank", shiny::icon("hashtag")),
@@ -31,7 +43,11 @@ ui <- shiny::fluidPage(
         input_id = "hand_list",
         labels = NULL,
         orientation = "horizontal",
-        options = set_opts_hand_limit("shared_group", pull_limit = 8, put_limit = 5)
+        options = set_opts_hand_limit(
+          "shared_group",
+          pull_limit = pool_limit,
+          put_limit = hand_limit
+        )
       )
     )
   )
@@ -39,25 +55,20 @@ ui <- shiny::fluidPage(
 
 server <- function(input, output) {
 
-  # Data ----
-
-  all_card_images <- get_card_taglist()
-
   # Reactive values ----
 
   # Set up card sets
 
   rv <- shiny::reactiveValues(
     hand = NULL,
-    pool = sample(permute_suits_and_ranks(), 8) |> order_cards("rank")
+    pool = sample(deck, pool_limit)
   )
 
-  deck <- permute_suits_and_ranks()
   rv[["deck"]] <- deck[!deck %in% shiny::isolate(rv[["pool"]])]
 
   pool <- shiny::isolate(rv[["pool"]])
   pool_images <- all_card_images[names(all_card_images) %in% pool]
-  rv[["pool_images"]] <- pool_images[shiny::isolate(rv[["pool"]])]  # reorder
+  rv[["pool_images"]] <- pool_images[shiny::isolate(rv[["pool"]])]
 
   # Observers ----
 
@@ -82,53 +93,38 @@ server <- function(input, output) {
 
     deck <- rv[["deck"]]
     pool <- rv[["pool"]]
-    n_cards_needed <- 8 - length(pool)
+    n_cards_needed <- pool_limit - length(pool)
 
     new_cards <- sample(deck, n_cards_needed)
-    new_pool <- c(pool, new_cards)
+    new_pool <- append(pool, new_cards)
 
     rv[["deck"]] <- deck[!deck %in% new_cards]  # remove sampled cards from deck
     rv[["pool"]] <- new_pool  # set sample as pool
-    rv[["pool_images"]] <- all_card_images[names(all_card_images) %in% rv[["pool"]]]
+    images <- all_card_images[names(all_card_images) %in% rv[["pool"]]]
+    rv[["pool_images"]] <- images[rank(new_pool)]  # new cards to the right
 
-    sortable:::update_rank_list(
-      "pool_list",
-      text = rv[["pool_images"]]
-    )
+    sortable:::update_rank_list("pool_list", text = rv[["pool_images"]])
 
   })
 
   # On button click, order by rank
   shiny::observeEvent(input$button_rank, {
-
     cards_ordered <- order_cards(rv[["pool"]], "rank")
     rv[["pool"]] <- cards_ordered
     rv[["pool_images"]] <- rv[["pool_images"]][cards_ordered]
-
-    sortable:::update_rank_list(
-      "pool_list",
-      text = rv[["pool_images"]]
-    )
-
+    sortable:::update_rank_list("pool_list", text = rv[["pool_images"]])
   })
 
   # On button click, order by rank
   shiny::observeEvent(input$button_suit, {
-
     cards_ordered <- order_cards(rv[["pool"]], "suit")
     rv[["pool"]] <- cards_ordered
     rv[["pool_images"]] <- rv[["pool_images"]][cards_ordered]
-
-    sortable:::update_rank_list(
-      "pool_list",
-      text = rv[["pool_images"]]
-    )
-
+    sortable:::update_rank_list("pool_list", text = rv[["pool_images"]])
   })
 
   # Outputs ----
 
-  # Create pool list UI
   output$card_pool_ui <- shiny::renderUI({
     sortable::rank_list(
       input_id = "pool_list",
@@ -141,19 +137,16 @@ server <- function(input, output) {
   output$pool_count <- shiny::renderText({
     pool_size <- length(input$pool_list)
     deck_count <- shiny::isolate(rv[["deck"]])
-    paste0("Pool (", pool_size, "/8, ", length(deck_count), "/52 in deck)")
+    paste0(
+      "Pool (", pool_size, "/", pool_limit, ", ",
+      length(deck_count), "/52 in deck)"
+    )
   })
 
   output$hand_count <- shiny::renderText({
     card_count <- if (is.null(input$hand_list)) 0 else length(input$hand_list)
     poker_hand <- evaluate_poker_hand(input$hand_list)
-    score <- score_hand(input$hand_list)
-    paste0(
-      "Hand (",
-      card_count, "/5, ",
-      poker_hand, ", ",
-      score, " points)"
-    )
+    paste0("Hand (", card_count, "/", hand_limit, ", ", poker_hand, ")")
   })
 
 }
