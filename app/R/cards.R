@@ -129,7 +129,7 @@ enumerate_cards <- function(cards) {
 }
 
 permute_suits_and_ranks <- function(
-    ranks = c("A", "K", "Q", "J", "T", 9:2),
+    ranks = c(2:9, "T", "J", "Q", "K", "A"),
     suits = c("C", "D", "H", "S"),
     as_vector = TRUE
 ) {
@@ -140,7 +140,7 @@ permute_suits_and_ranks <- function(
     permutations <- paste0(permutations[["rank"]], permutations[["suit"]])
   }
 
-  permutations
+  rev(permutations)
 
 }
 
