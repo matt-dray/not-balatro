@@ -17,7 +17,7 @@ ui <- shiny::fluidPage(
     title = "Sortable card concept",
     shiny::column(
       width = 12,
-      shiny::tags$h1("🃏 Sortable card concept"),
+      shiny::tags$h1("Sortable card concept"),
       shiny::tags$p(
         "An experiment by",
         shiny::tags$a(href = "https://www.matt-dray.com/", "matt-dray"),
@@ -33,6 +33,7 @@ ui <- shiny::fluidPage(
           "a poker hand."
         )
       ),
+      shiny::tags$hr(),
       shiny::tags$h3(shiny::textOutput("pool_count")),
       shiny::uiOutput("card_pool_ui"),
       shiny::actionButton("button_rank", "Rank", shiny::icon("hashtag")),
@@ -48,6 +49,18 @@ ui <- shiny::fluidPage(
           pull_limit = pool_limit,
           put_limit = hand_limit
         )
+      ),
+      shiny::tags$hr(),
+      shiny::tags$details(
+        shiny::tags$summary("🃏"),
+        shiny::tags$p("Pool:"),
+        shiny::verbatimTextOutput("dev_pool"),
+        shiny::tags$p("Hand:"),
+        shiny::verbatimTextOutput("dev_hand"),
+        shiny::tags$p("Poker hand:"),
+        shiny::verbatimTextOutput("dev_poker_hand"),
+        shiny::tags$p("Deck:"),
+        shiny::verbatimTextOutput("dev_deck")
       )
     )
   )
@@ -60,8 +73,9 @@ server <- function(input, output) {
   # Set up card sets
 
   rv <- shiny::reactiveValues(
+    pool = sample(deck, pool_limit),
     hand = NULL,
-    pool = sample(deck, pool_limit)
+    poker_hand = NULL
   )
 
   rv[["deck"]] <- deck[!deck %in% shiny::isolate(rv[["pool"]])]
@@ -146,8 +160,14 @@ server <- function(input, output) {
   output$hand_count <- shiny::renderText({
     card_count <- if (is.null(input$hand_list)) 0 else length(input$hand_list)
     poker_hand <- evaluate_poker_hand(input$hand_list)
+    rv[["poker_hand"]] <- poker_hand
     paste0("Hand (", card_count, "/", hand_limit, ", ", poker_hand, ")")
   })
+
+  output$dev_pool <- shiny::renderPrint(rv[["pool"]])
+  output$dev_hand <- shiny::renderPrint(rv[["hand"]])
+  output$dev_poker_hand <- shiny::renderPrint(rv[["poker_hand"]])
+  output$dev_deck <- shiny::renderPrint(rv[["deck"]])
 
 }
 
